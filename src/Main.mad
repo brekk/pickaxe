@@ -1,13 +1,16 @@
 import IO from "IO"
+import List from "List"
 import Process from "Process"
+import String from "String"
 import Wish from "Wish"
 
 import FileSystem from "./FileSystem"
 
 
 
+cwd = Process.getCurrentWorkingDirectory()
+
 main = () => {
-  cwd = Process.getCurrentWorkingDirectory()
   pipe(
     map(
       pipe(
@@ -19,3 +22,25 @@ main = () => {
     Wish.fulfill((e) => { IO.trace("bad", e) }, (x) => { IO.trace("good", x) }),
   )([cwd ++ "/madlib.json", cwd ++ "/fixture"])
 }
+
+/*
+two = () => {
+  pipe(
+    FileSystem.readAll,
+    IO.pTrace("huh?"),
+    Wish.parallel,
+    map(List.reduce((x, y) => List.concat(x, y), [])),
+    map(String.join("\n")),
+    Wish.fulfill((e) => { IO.trace("bad", e) }, (x) => { IO.put(x) }),
+  )(cwd ++ "/fixture")
+}
+
+three = () => {
+  pipe(
+    FileSystem.readdir,
+    IO.pTrace("huh?"),
+    map(String.join("\n")),
+    Wish.fulfill((e) => { IO.trace("bad", e) }, (x) => { IO.trace("good", x) }),
+  )(cwd ++ "/fixture")
+}
+*/

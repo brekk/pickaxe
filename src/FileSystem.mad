@@ -1,6 +1,7 @@
 import type { Wish } from "Wish"
 
 import Dir from "Directory"
+import IO from "IO"
 import Wish from "Wish"
 
 
@@ -10,6 +11,7 @@ type FileDescriptor = FileDescriptor(String)
 #iftarget js
 
 #- import fs from "node:fs" -#
+#- import fsPromises from "node:fs/promises" -#
 
 statment :: ((a -> {}) -> (c -> {}) -> a -> b -> c) -> String -> Wish a c
 statment = (transform, path) => Wish.Wish(
@@ -22,27 +24,39 @@ statment = (transform, path) => Wish.Wish(
 
 isDirectory :: String -> Wish a Boolean
 export isDirectory = statment((b, g, e, x) => #- e ? g(false) : g(x.isDirectory()) -#)
-/*
+// /*
 isFile :: String -> Wish a Boolean
 export isFile = statment((b, g, e, x) => #- e ? g(false) : g(x.isFile()) -#)
 
-readdir :: String -> Wish a (List String)
-readdir = (path) => Wish.Wish(
+alias AsyncFileList = Wish a (List String)
+
+readdir :: String -> AsyncFileList
+export readdir = (path) => Wish.Wish(
   (bad, good) => {
-    #- fs.readdir(path, (e, list) => e ? bad(e) : good(list) ) -#
+    IO.pTrace("PATH!", path)
+    #- fsPromises.readdir(path).catch(bad).then(good) -#
     return () => {}
   },
 )
 
-readAll :: String -> Wish a (List String)
-readAll = (p) => {
-  walk :: String -> List (Wish a (List String)) -> List (Wish a (List String))
-  walk = (path, list) => where (list) {
-    [] => [readdir(path)]
-    [a, ...xs] => [a, ...walk(path, xs)]
+
+readAll :: String -> List AsyncFileList
+export readAll = (p) => {
+  walk :: String -> List AsyncFileList -> List AsyncFileList
+  walk = (path, list) => where(list) {
+    [] =>
+      pipe(
+        isFile,
+        chain((yes) => yes ? Wish.good([path]) : readdir(path)),
+        (x) => [x],
+      )(path)
+
+    [a, ...xs] =>
+      [a, ...walk(path, xs)]
   }
+  return walk(p, [])
 }
-*/
+// */
 
 #elseif llvm
 
@@ -52,12 +66,18 @@ isDir = extern "pickaxe__is__directory"
 isDirectory :: String -> Wish a Boolean
 export isDirectory = (p) => Wish.good(isDir(p))
 
-/*
+// /*
 isF :: String -> Boolean
 isF = extern "pickaxe__is__file"
 
 isFile :: String -> Wish a Boolean
 export isFile = (p) => Wish.good(isF(p))
-*/
+
+readdir :: String -> Wish a (List String)
+export readdir = (x) => Wish.good([])
+
+readAll :: String -> List (Wish a (List String))
+export readAll = (x) => []
+// */
 
 #endif

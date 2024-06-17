@@ -7,10 +7,10 @@
 #include <sys/stat.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <string.h>
  
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 // https://stackoverflow.com/questions/146924/how-can-i-tell-if-a-given-path-is-a-directory-or-a-file-c-c
