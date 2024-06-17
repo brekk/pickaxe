@@ -1,0 +1,63 @@
+import type { Wish } from "Wish"
+
+import Dir from "Directory"
+import Wish from "Wish"
+
+
+
+type FileDescriptor = FileDescriptor(String)
+
+#iftarget js
+
+#- import fs from "node:fs" -#
+
+statment :: ((a -> {}) -> (c -> {}) -> a -> b -> c) -> String -> Wish a c
+statment = (transform, path) => Wish.Wish(
+  (b, g) => {
+    #- fs.lstat(path, (e, x) => transform(b)(g)(e)(x)) -#
+    return () => {}
+  },
+)
+
+
+isDirectory :: String -> Wish a Boolean
+export isDirectory = statment((b, g, e, x) => #- e ? g(false) : g(x.isDirectory()) -#)
+/*
+isFile :: String -> Wish a Boolean
+export isFile = statment((b, g, e, x) => #- e ? g(false) : g(x.isFile()) -#)
+
+readdir :: String -> Wish a (List String)
+readdir = (path) => Wish.Wish(
+  (bad, good) => {
+    #- fs.readdir(path, (e, list) => e ? bad(e) : good(list) ) -#
+    return () => {}
+  },
+)
+
+readAll :: String -> Wish a (List String)
+readAll = (p) => {
+  walk :: String -> List (Wish a (List String)) -> List (Wish a (List String))
+  walk = (path, list) => where (list) {
+    [] => [readdir(path)]
+    [a, ...xs] => [a, ...walk(path, xs)]
+  }
+}
+*/
+
+#elseif llvm
+
+isDir :: String -> Boolean
+isDir = extern "pickaxe__is__directory"
+
+isDirectory :: String -> Wish a Boolean
+export isDirectory = (p) => Wish.good(isDir(p))
+
+/*
+isF :: String -> Boolean
+isF = extern "pickaxe__is__file"
+
+isFile :: String -> Wish a Boolean
+export isFile = (p) => Wish.good(isF(p))
+*/
+
+#endif

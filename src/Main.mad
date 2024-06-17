@@ -1,17 +1,21 @@
-import Dir from "Directory"
 import IO from "IO"
 import Process from "Process"
 import Wish from "Wish"
 
-import Folder from "@/Folder"
+import FileSystem from "./FileSystem"
 
 
 
 main = () => {
+  cwd = Process.getCurrentWorkingDirectory()
   pipe(
-    mappend($, "/madlib.json"),
-    IO.pTrace("directory?"),
-    Folder.isDirectory,
+    map(
+      pipe(
+        IO.pTrace("file?"),
+        FileSystem.isDirectory,
+      ),
+    ),
+    Wish.parallel,
     Wish.fulfill((e) => { IO.trace("bad", e) }, (x) => { IO.trace("good", x) }),
-  )(Process.getCurrentWorkingDirectory())
+  )([cwd ++ "/madlib.json", cwd ++ "/fixture"])
 }

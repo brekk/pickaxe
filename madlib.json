@@ -4,5 +4,8 @@
   "main": "src/Main.mad",
   "importAliases": {
     ".": "src"
-  }
+  },
+  "staticLibs": [
+    "./lib/build/libpickaxe.a",
+  ]
 }
