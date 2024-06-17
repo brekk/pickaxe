@@ -1,0 +1,8 @@
+import IO from "IO"
+
+
+
+
+// walk folder
+// parse .md files
+// infer internal links

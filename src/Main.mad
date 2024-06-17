@@ -1,7 +1,17 @@
+import Dir from "Directory"
 import IO from "IO"
+import Process from "Process"
+import Wish from "Wish"
+
+import Folder from "@/Folder"
 
 
 
 main = () => {
-  IO.putLine("Hello World!")
+  pipe(
+    mappend($, "/fake"),
+    IO.pTrace("directory?"),
+    Folder.isDirectory,
+    Wish.fulfill((e) => { IO.trace("bad", e) }, (x) => { IO.trace("good", x) }),
+  )(Process.getCurrentWorkingDirectory())
 }

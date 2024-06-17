@@ -1,0 +1,28 @@
+import type { Wish } from "Wish"
+
+import Dir from "Directory"
+import Wish from "Wish"
+
+
+
+#iftarget js
+
+#- import fs from "node:fs" -#
+
+isDirectory :: String -> Wish a Boolean
+export isDirectory = (path) => Wish.Wish(
+  (_, g) => {
+    #- fs.lstat(path, (e, x) => e ? g(false) : g(true)) -#
+    return () => {}
+  },
+)
+
+#elseif llvm
+
+isDir :: String -> Boolean
+isDir = extern "pickaxe__is__directory"
+
+isDirectory :: String -> Wish a Boolean
+export isDirectory = (p) => Wish.good(isDir(p))
+
+#endif
