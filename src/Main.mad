@@ -9,7 +9,7 @@ import Folder from "@/Folder"
 
 main = () => {
   pipe(
-    mappend($, "/fake"),
+    mappend($, "/madlib.json"),
     IO.pTrace("directory?"),
     Folder.isDirectory,
     Wish.fulfill((e) => { IO.trace("bad", e) }, (x) => { IO.trace("good", x) }),
