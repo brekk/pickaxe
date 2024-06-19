@@ -6,6 +6,6 @@
     ".": "src"
   },
   "staticLibs": [
-    "./lib/build/libpickaxe.a",
+    "./lib/build/libpickaxe.a"
   ]
 }

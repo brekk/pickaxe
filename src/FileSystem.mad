@@ -8,15 +8,18 @@ import Wish from "Wish"
 
 type FileDescriptor = FileDescriptor(String)
 
+alias DirEnt = { directory :: Boolean, groups :: List String, name :: String, path :: String }
+// alias DirEnt = #[String, String, Boolean]
+
 #iftarget js
 
 #- import fs from "node:fs" -#
-#- import fsPromises from "node:fs/promises" -#
+#- import path from "node:path" -#
 
 statment :: ((a -> {}) -> (c -> {}) -> a -> b -> c) -> String -> Wish a c
-statment = (transform, path) => Wish.Wish(
+statment = (transform, filePath) => Wish.Wish(
   (b, g) => {
-    #- fs.lstat(path, (e, x) => transform(b)(g)(e)(x)) -#
+    #- fs.lstat(filePath, (e, x) => transform(b)(g)(e)(x)) -#
     return () => {}
   },
 )
@@ -30,33 +33,27 @@ export isFile = statment((b, g, e, x) => #- e ? g(false) : g(x.isFile()) -#)
 
 alias AsyncFileList = Wish a (List String)
 
-readdir :: String -> AsyncFileList
-export readdir = (path) => Wish.Wish(
+
+readdir :: Boolean -> (String -> Boolean) -> String -> Wish a (List DirEnt)
+export readdir = (recursiveWalk, filter, filePath) => Wish.Wish(
   (bad, good) => {
-    IO.pTrace("PATH!", path)
-    #- fsPromises.readdir(path).catch(bad).then(good) -#
+    #- fs.readdir(
+      filePath,
+      { withFileTypes: true, recursive: recursiveWalk },
+      (e, x) => e ? bad(e) :
+      good(__jsArrayToList__(x.filter(({name}) => filter(name)).map(y => ({
+        name: y.name,
+        path: y.path,
+        groups: __jsArrayToList__(y.path.split(path.sep).slice(1)),
+        directory: y.isDirectory()
+      }))))
+    ) -#
     return () => {}
   },
 )
+export readAll = readdir(true)
+export readDirectory = readdir(false)
 
-
-readAll :: String -> List AsyncFileList
-export readAll = (p) => {
-  walk :: String -> List AsyncFileList -> List AsyncFileList
-  walk = (path, list) => where(list) {
-    [] =>
-      pipe(
-        isFile,
-        chain((yes) => yes ? Wish.good([path]) : readdir(path)),
-        (x) => [x],
-      )(path)
-
-    [a, ...xs] =>
-      [a, ...walk(path, xs)]
-  }
-  return walk(p, [])
-}
-// */
 
 #elseif llvm
 
@@ -73,11 +70,14 @@ isF = extern "pickaxe__is__file"
 isFile :: String -> Wish a Boolean
 export isFile = (p) => Wish.good(isF(p))
 
-readdir :: String -> Wish a (List String)
-export readdir = (x) => Wish.good([])
+readdir :: Boolean -> (String -> Boolean) -> String -> Wish a (List DirEnt)
+export readdir = (_, _, _) => Wish.good([])
 
-readAll :: String -> List (Wish a (List String))
-export readAll = (x) => []
+readAll :: (String -> Boolean) -> String -> Wish a (List DirEnt)
+export readAll = (_, _) => Wish.good([])
+
+readDirectory :: (String -> Boolean) -> String -> Wish a (List DirEnt)
+export readDirectory = (_, _) => Wish.good([])
 // */
 
 #endif

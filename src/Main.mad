@@ -4,7 +4,7 @@ import Process from "Process"
 import String from "String"
 import Wish from "Wish"
 
-import FileSystem from "./FileSystem"
+import FileSystem from "@/FileSystem"
 
 
 
@@ -12,35 +12,7 @@ cwd = Process.getCurrentWorkingDirectory()
 
 main = () => {
   pipe(
-    map(
-      pipe(
-        IO.pTrace("file?"),
-        FileSystem.isDirectory,
-      ),
-    ),
-    Wish.parallel,
-    Wish.fulfill((e) => { IO.trace("bad", e) }, (x) => { IO.trace("good", x) }),
-  )([cwd ++ "/madlib.json", cwd ++ "/fixture"])
+    FileSystem.readAll((x) => x != ".DS_Store" && !String.endsWith(".canvas", x)),
+    Wish.fulfill((e) => { IO.pTrace("bad", e) }, (x) => { IO.pTrace("good", x) }),
+  )("./notes")
 }
-
-/*
-two = () => {
-  pipe(
-    FileSystem.readAll,
-    IO.pTrace("huh?"),
-    Wish.parallel,
-    map(List.reduce((x, y) => List.concat(x, y), [])),
-    map(String.join("\n")),
-    Wish.fulfill((e) => { IO.trace("bad", e) }, (x) => { IO.put(x) }),
-  )(cwd ++ "/fixture")
-}
-
-three = () => {
-  pipe(
-    FileSystem.readdir,
-    IO.pTrace("huh?"),
-    map(String.join("\n")),
-    Wish.fulfill((e) => { IO.trace("bad", e) }, (x) => { IO.trace("good", x) }),
-  )(cwd ++ "/fixture")
-}
-*/
