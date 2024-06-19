@@ -26,6 +26,7 @@ main = () => {
         map(
           (note) => pipe(
             Pickaxe.read,
+            chain(Pickaxe.convertReadFileToNote),
             map((parsed) => ({ ...note, parsed })),
           )(note),
         ),

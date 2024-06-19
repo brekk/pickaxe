@@ -61,18 +61,16 @@ export read = (noteFile) => pipe(
   Wish.mapRej((_) => `Error parsing file ${noteFile.fullPath}!`),
 )(noteFile)
 
-convertReadFileToNote :: Wish String String -> Wish String Markdown
+convertReadFileToNote :: String -> Wish String Markdown
 export convertReadFileToNote = (readFile) => pipe(
-  map(parseMarkdown),
-  chain(
-    where {
-      Left(_) =>
-        Wish.bad("Error parsing file")
+  parseMarkdown,
+  where {
+    Left(_) =>
+      Wish.bad("Error parsing file")
 
-      Right(md) =>
-        Wish.good(md)
-    },
-  ),
+    Right(md) =>
+      Wish.good(md)
+  },
 )(readFile)
 
 /*
