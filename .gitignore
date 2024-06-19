@@ -1,3 +1,5 @@
 .coverage
 build
 .DS_Store
+madlib_modules
+.module_cache

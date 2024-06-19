@@ -8,7 +8,7 @@ import Wish from "Wish"
 
 type FileDescriptor = FileDescriptor(String)
 
-alias DirEnt = { directory :: Boolean, groups :: List String, name :: String, path :: String }
+export alias DirEnt = { directory :: Boolean, fullPath :: String, name :: String, path :: String }
 // alias DirEnt = #[String, String, Boolean]
 
 #iftarget js
@@ -16,6 +16,7 @@ alias DirEnt = { directory :: Boolean, groups :: List String, name :: String, pa
 #- import fs from "node:fs" -#
 #- import path from "node:path" -#
 
+// name intentional, it's like, a pun or whatever
 statment :: ((a -> {}) -> (c -> {}) -> a -> b -> c) -> String -> Wish a c
 statment = (transform, filePath) => Wish.Wish(
   (b, g) => {
@@ -35,17 +36,18 @@ alias AsyncFileList = Wish a (List String)
 
 
 readdir :: Boolean -> (String -> Boolean) -> String -> Wish a (List DirEnt)
-export readdir = (recursiveWalk, filter, filePath) => Wish.Wish(
+export readdir = (recursive, filter, filePath) => Wish.Wish(
   (bad, good) => {
     #- fs.readdir(
       filePath,
-      { withFileTypes: true, recursive: recursiveWalk },
+      { withFileTypes: true, recursive },
       (e, x) => e ? bad(e) :
       good(__jsArrayToList__(x.filter(({name}) => filter(name)).map(y => ({
         name: y.name,
         path: y.path,
-        groups: __jsArrayToList__(y.path.split(path.sep).slice(1)),
+        fullPath: y.path + path.sep + y.name,
         directory: y.isDirectory()
+        // groups: __jsArrayToList__(y.path.split(path.sep).slice(1)),
       }))))
     ) -#
     return () => {}

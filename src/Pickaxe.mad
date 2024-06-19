@@ -1,8 +1,67 @@
+import type { Wish } from "Wish"
+
+import type { Markdown } from "MadMarkdownParser"
+
+import type { DirEnt } from "@/FileSystem"
+
+import File from "File"
 import IO from "IO"
+import List from "List"
+import String from "String"
+
+import { parseMarkdown } from "MadMarkdownParser"
+
+import { EXCLUDED_FILETYPES } from "@/Constants"
+import { readAll } from "@/FileSystem"
 
 
 
+export alias NoteFile = {
+  fullPath :: String,
+  groups :: List String,
+  name :: String,
+  path :: String,
+}
 
+export alias Note = { ...NoteFile, parsed :: Markdown }
+
+readNotes :: String -> Wish a (List NoteFile)
+export readNotes = (filePath) => pipe(
+  // read all files except the ones we care about
+  readAll((x) => !List.includes(x, EXCLUDED_FILETYPES) && !String.endsWith(".canvas", x)),
+  map(
+    pipe(
+      // we don't care about directories
+      List.reject(.directory),
+      // add groups to each 
+      map(
+        (raw) => (
+          {
+            name: raw.name,
+            path: raw.path,
+            fullPath: raw.fullPath,
+            groups: pipe(
+              String.split("/"),
+              (y) => List.slice(1, List.length(y), y),
+            )(raw.path),
+          }
+        ),
+      ),
+    ),
+  ),
+)(filePath)
+
+/*
+chain(
+    map(
+      (raw) => pipe(
+        .fullPath,
+        File.read,
+        map((parsed) => ({ ...raw, parsed })),
+      )(raw),
+    ),
+  ),
+*/
 // walk folder
 // parse .md files
 // infer internal links

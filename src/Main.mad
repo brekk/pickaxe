@@ -5,14 +5,22 @@ import String from "String"
 import Wish from "Wish"
 
 import FileSystem from "@/FileSystem"
+import Pickaxe from "@/Pickaxe"
 
 
 
 cwd = Process.getCurrentWorkingDirectory()
 
-main = () => {
+prev = () => {
   pipe(
     FileSystem.readAll((x) => x != ".DS_Store" && !String.endsWith(".canvas", x)),
+    Wish.fulfill((e) => { IO.pTrace("bad", e) }, (x) => { IO.pTrace("good", x) }),
+  )("./notes")
+}
+
+main = () => {
+  pipe(
+    Pickaxe.readNotes,
     Wish.fulfill((e) => { IO.pTrace("bad", e) }, (x) => { IO.pTrace("good", x) }),
   )("./notes")
 }
