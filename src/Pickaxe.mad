@@ -1,13 +1,16 @@
+import type { Error } from "File"
 import type { Wish } from "Wish"
 
 import type { Markdown } from "MadMarkdownParser"
 
 import type { DirEnt } from "@/FileSystem"
 
+import { Left, Right } from "Either"
 import File from "File"
 import IO from "IO"
 import List from "List"
 import String from "String"
+import Wish from "Wish"
 
 import { parseMarkdown } from "MadMarkdownParser"
 
@@ -51,14 +54,38 @@ export readNotes = (filePath) => pipe(
   ),
 )(filePath)
 
+read :: NoteFile -> Wish String String
+export read = (noteFile) => pipe(
+  .fullPath,
+  File.read,
+  Wish.mapRej((_) => `Error parsing file ${noteFile.fullPath}!`),
+)(noteFile)
+
+convertReadFileToNote :: Wish String String -> Wish String Markdown
+export convertReadFileToNote = (readFile) => pipe(
+  map(parseMarkdown),
+  chain(
+    where {
+      Left(_) =>
+        Wish.bad("Error parsing file")
+
+      Right(md) =>
+        Wish.good(md)
+    },
+  ),
+)(readFile)
+
 /*
 chain(
-    map(
-      (raw) => pipe(
-        .fullPath,
-        File.read,
-        map((parsed) => ({ ...raw, parsed })),
-      )(raw),
+    pipe(
+      parseMarkdown,
+      where {
+        Left(x) =>
+          Wish.bad(x)
+
+        Right(md) =>
+          Wish.good(md)
+      },
     ),
   ),
 */

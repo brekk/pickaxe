@@ -21,6 +21,17 @@ prev = () => {
 main = () => {
   pipe(
     Pickaxe.readNotes,
+    chain(
+      pipe(
+        map(
+          (note) => pipe(
+            Pickaxe.read,
+            map((parsed) => ({ ...note, parsed })),
+          )(note),
+        ),
+        Wish.parallel,
+      ),
+    ),
     Wish.fulfill((e) => { IO.pTrace("bad", e) }, (x) => { IO.pTrace("good", x) }),
   )("./notes")
 }
